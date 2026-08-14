@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = 'queenkoba-backend'
+        CONTAINER_NAME = 'queenkoba-backend'
+        HOST_PORT = '5001'
+        CONTAINER_PORT = '5000'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build --no-cache \
+                        -t ${IMAGE_NAME}:latest .
+                '''
+            }
+        }
+
+        stage('Stop Old Container') {
+            steps {
+                sh '''
+                    docker rm -f ${CONTAINER_NAME} || true
+                '''
+            }
+        }
+
+        stage('Run Backend') {
+            steps {
+                sh '''
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        -p ${HOST_PORT}:${CONTAINER_PORT} \
+                        ${IMAGE_NAME}:latest
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh '''
+                    sleep 5
+                    curl -f http://localhost:${HOST_PORT}/health
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Queen Koba backend deployed successfully!'
+        }
+
+        failure {
+            echo '❌ Backend deployment failed.'
+            sh 'docker logs ${CONTAINER_NAME} || true'
+        }
+    }
+}
