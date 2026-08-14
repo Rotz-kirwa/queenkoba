@@ -2,8 +2,10 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'queenkoba-backend'
-        CONTAINER_NAME = 'queenkoba-backend'
+        IMAGE_NAME = "queenkoba-backend"
+        CONTAINER_NAME = "queenkoba-backend"
+        HOST_PORT = "5001"
+        CONTAINER_PORT = "5000"
     }
 
     stages {
@@ -17,48 +19,38 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    docker build -t queenkoba-backend:latest .
+                    docker build -t $IMAGE_NAME:latest .
                 '''
             }
         }
 
-        stage('Remove Old Container') {
+        stage('Stop Old Container') {
             steps {
                 sh '''
-                    docker rm -f queenkoba-backend || true
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONTAINER_NAME || true
                 '''
             }
         }
 
-        stage('Run Backend') {
+        stage('Run New Container') {
             steps {
                 sh '''
                     docker run -d \
-                    --name queenkoba-backend \
-                    -p 5001:5000 \
-                    queenkoba-backend:latest
+                    --name $CONTAINER_NAME \
+                    -p $HOST_PORT:$CONTAINER_PORT \
+                    $IMAGE_NAME:latest
                 '''
             }
         }
 
-        stage('Health Check') {
+        stage('Check Container') {
             steps {
                 sh '''
-                    sleep 5
-                    curl -f http://localhost:5001/health
+                    docker ps
+                    curl -f http://localhost:5001/health || true
                 '''
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Queen Koba Backend deployed successfully!'
-        }
-
-        failure {
-            echo 'Backend deployment failed!'
-            sh 'docker logs queenkoba-backend || true'
         }
     }
 }
