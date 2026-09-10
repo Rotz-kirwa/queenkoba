@@ -6,20 +6,20 @@
   "scripts": {
     "dev": "vite",
     "dev:frontend": "vite",
-    "dev:admin": "npm run dev --prefix qwen-koba-admin",
-    "dev:backend": "cd backend/koba--backend-only && if [ -x venv/bin/python ]; then venv/bin/python queenkoba_postgresql.py; else python3 queenkoba_postgresql.py; fi",
+    "dev:admin": "npm run dev --prefix koba--backend-only/admin-dashboard",
+    "dev:backend": "cd koba--backend-only/backend/queen-koba-backend && if [ -x venv/bin/python ]; then venv/bin/python queenkoba_mongodb.py; else python3 queenkoba_mongodb.py; fi",
     "dev:all": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\" \"npm run dev:backend\"",
     "seo:sitemap": "node scripts/generate-sitemap.mjs",
     "build": "npm run seo:sitemap && vite build",
     "build:frontend": "npm run seo:sitemap && vite build",
-    "build:admin": "npm run build --prefix qwen-koba-admin",
+    "build:admin": "npm run build --prefix koba--backend-only/admin-dashboard",
     "build:all": "concurrently \"npm run build:frontend\" \"npm run build:admin\"",
     "build:dev": "npm run seo:sitemap && vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "install:admin": "npm install --prefix qwen-koba-admin"
+    "install:admin": "npm install --prefix koba--backend-only/admin-dashboard"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

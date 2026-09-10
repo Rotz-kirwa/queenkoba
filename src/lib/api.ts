@@ -231,7 +231,7 @@ export const cartAPI = {
 
 // Orders API
 export const ordersAPI = {
-  create: (orderData: any) =>
+  create: (orderData: Record<string, unknown>) =>
     apiClient('/checkout', {
       method: 'POST',
       body: JSON.stringify(orderData),

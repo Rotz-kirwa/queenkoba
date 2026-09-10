@@ -38,8 +38,9 @@ const Signup = () => {
       await signup(formData.name, formData.email, formData.password, formData.phone);
       toast({ title: 'Account Created!', description: 'Welcome to Queen Koba.' });
       navigate(redirectPath);
-    } catch (error: any) {
-      toast({ title: 'Signup Failed', description: error.message, variant: 'destructive' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to create account. Please try again.";
+      toast({ title: 'Signup Failed', description: message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }

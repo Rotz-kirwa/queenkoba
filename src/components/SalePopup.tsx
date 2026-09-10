@@ -31,7 +31,10 @@ export default function SalePopup() {
       if (!response.ok) return;
       const data = await response.json();
       
-      const onSaleProducts = data.products?.filter((p: any) => p.on_sale && p.discount_percentage > 0);
+      const onSaleProducts = data.products?.filter(
+        (p: { on_sale?: boolean; discount_percentage?: number }) =>
+          Boolean(p.on_sale && (p.discount_percentage ?? 0) > 0),
+      );
       
       if (onSaleProducts && onSaleProducts.length > 0) {
         setSaleProduct(onSaleProducts[0]);

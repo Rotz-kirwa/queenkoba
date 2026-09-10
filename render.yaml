@@ -7,19 +7,17 @@ services:
     runtime: python
     region: virginia
     plan: free
-    rootDir: backend/koba--backend-only/backend/queen-koba-backend
-    buildCommand: pip install -r app/requirements.txt gunicorn
-    startCommand: gunicorn queenkoba_mongodb:app
+    rootDir: koba--backend-only/backend/queen-koba-backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT queenkoba_mongodb:app
     healthCheckPath: /health
     envVars:
       - key: PORT
         value: 10000
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: DATABASE_URL
-        value: postgresql://queenkoba_db_53bf_user:mFE0gvRyJMYjcqPaqWHAXRJuekqT2LU1@dpg-d9ouv0u7bikc73846kp0-a/queenkoba_db_53bf
-      - key: EXTERNAL_DATABASE_URL
-        value: postgresql://queenkoba_db_53bf_user:mFE0gvRyJMYjcqPaqWHAXRJuekqT2LU1@dpg-d9ouv0u7bikc73846kp0-a.virginia-postgres.render.com/queenkoba_db_53bf
+      - key: MONGO_URI
+        sync: false
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: FRONTEND_URL
@@ -31,14 +29,15 @@ services:
       - key: M_PESA_ENV
         value: production
       - key: M_PESA_APP_NAME
-        value: "Prod-Walche Commodity Traders Ltd-1773395059343"
+        value: "Queen Koba Skincare"
       - key: M_PESA_CONSUMER_KEY
-        value: eZk6yOsCInRJHkvAc4bselyVjgVZbXuABGHKgU4SaZrkAmSy
+        sync: false
       - key: M_PESA_CONSUMER_SECRET
-        value: BqJY7s3al5Sa7LCcSGDwsUHZ7ipSbqpvuIi2ZCensBN1NBlUumMdcfDB2A41Msfw
+        sync: false
       - key: M_PESA_PASSKEY
-        value: 8e10ea8595b5cc6a555ad8d3f6436f852898258a5647cd927a10e15359d7634b
+        sync: false
       - key: M_PESA_SHORTCODE
         value: "4152819"
       - key: M_PESA_CALLBACK_URL
         value: https://koba-backend-only-k8vt.onrender.com/payments/mpesa/callback
+

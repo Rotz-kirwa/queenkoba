@@ -48,7 +48,7 @@ export const getCurrentOrigin = () =>
   typeof window !== "undefined" ? window.location.origin : "";
 
 const isLocalGoogleAuthEnabled = () =>
-  String((import.meta.env as any).VITE_ENABLE_LOCAL_GOOGLE_AUTH || "").toLowerCase() === "true";
+  String(import.meta.env.VITE_ENABLE_LOCAL_GOOGLE_AUTH || "").toLowerCase() === "true";
 
 const LOCAL_DEV_HOSTS = new Set(["localhost", "127.0.0.1"]);
 const LOCAL_DEV_PORTS = new Set(["3000", "3001", "5173", "5174", "8080", "8081"]);

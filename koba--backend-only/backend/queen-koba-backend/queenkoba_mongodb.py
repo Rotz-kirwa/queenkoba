@@ -858,21 +858,28 @@ def remove_from_cart(product_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def normalize_kenya_phone(phone_number):
+    """Clean and normalize Kenyan mobile numbers to international format (254XXXXXXXXX)."""
+    if not phone_number:
+        return ""
+    phone = str(phone_number).strip().replace('+', '').replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+    if phone.startswith('0'):
+        phone = '254' + phone[1:]
+    elif phone.startswith('7') or phone.startswith('1'):
+        phone = '254' + phone
+    return phone
+
 # ========== MPESA STK PUSH HELPER ==========
 def trigger_mpesa_stk_push(phone_number, amount_kes, order_id):
     try:
-        phone = str(phone_number).strip().replace('+', '').replace(' ', '')
-        if phone.startswith('0'):
-            phone = '254' + phone[1:]
-        elif phone.startswith('7') or phone.startswith('1'):
-            phone = '254' + phone
+        phone = normalize_kenya_phone(phone_number)
             
-        env = os.getenv('MPESA_ENVIRONMENT', 'sandbox').lower()
-        consumer_key = os.getenv('MPESA_CONSUMER_KEY', 'xGq4uGZGxA1eGAuYNA4Z0p8V55O3e20e')
-        consumer_secret = os.getenv('MPESA_CONSUMER_SECRET', 'mUu8wN42A2y74w3J')
-        shortcode = os.getenv('MPESA_SHORTCODE', '174379')
-        passkey = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
-        callback_url = os.getenv('MPESA_CALLBACK_URL', 'https://koba-backend-only-k8vt.onrender.com/payments/mpesa/callback')
+        env = (os.getenv('MPESA_ENVIRONMENT') or os.getenv('M_PESA_ENV') or 'sandbox').strip().lower()
+        consumer_key = os.getenv('MPESA_CONSUMER_KEY') or os.getenv('M_PESA_CONSUMER_KEY') or 'xGq4uGZGxA1eGAuYNA4Z0p8V55O3e20e'
+        consumer_secret = os.getenv('MPESA_CONSUMER_SECRET') or os.getenv('M_PESA_CONSUMER_SECRET') or 'mUu8wN42A2y74w3J'
+        shortcode = os.getenv('MPESA_SHORTCODE') or os.getenv('M_PESA_SHORTCODE') or '174379'
+        passkey = os.getenv('MPESA_PASSKEY') or os.getenv('M_PESA_PASSKEY') or 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
+        callback_url = os.getenv('MPESA_CALLBACK_URL') or os.getenv('M_PESA_CALLBACK_URL') or 'https://koba-backend-only-k8vt.onrender.com/payments/mpesa/callback'
         
         base_url = "https://api.safaricom.co.ke" if env == "production" else "https://sandbox.safaricom.co.ke"
         

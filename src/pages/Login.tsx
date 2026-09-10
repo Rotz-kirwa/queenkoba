@@ -28,8 +28,9 @@ const Login = () => {
       await login(formData.email, formData.password);
       toast({ title: 'Welcome back!', description: 'You have successfully logged in.' });
       navigate(redirectPath);
-    } catch (error: any) {
-      toast({ title: 'Login Failed', description: error.message, variant: 'destructive' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to sign in. Please try again.";
+      toast({ title: 'Login Failed', description: message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }

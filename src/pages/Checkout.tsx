@@ -203,7 +203,7 @@ const getFriendlyMpesaFailureMessage = (description?: string) => {
   return description;
 };
 
-const formatMpesaFailureDetails = (payment: any) => {
+const formatMpesaFailureDetails = (payment?: { result_code?: string | number; result_desc?: string } | null) => {
   const friendly = getFriendlyMpesaFailureMessage(payment?.result_desc);
   const rawBits = [
     payment?.result_code !== undefined && payment?.result_code !== null
@@ -418,12 +418,12 @@ const Checkout = () => {
           : response?.methods || response?.payment_methods || [];
         const methods = prioritizePaymentMethods(
           methodsRaw
-            .map((method: any) => ({
+            .map((method: { id?: string; code?: string; name?: string; type?: string; description?: string; logo?: string }) => ({
               id: method.id || method.code || method.name?.toLowerCase().replace(/\s+/g, "_"),
               name: method.name,
               type: method.type || method.code || "mobile_money",
               description: method.description || "Secure payment option",
-              logo: method.logo || paymentLogos[method.id || method.code],
+              logo: method.logo || paymentLogos[method.id || method.code || ""],
             }))
             .filter((method: PaymentMethod) => Boolean(method.id && method.name)),
         );

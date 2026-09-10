@@ -40,14 +40,14 @@ pipeline {
         }
 
         stage('Check Backend') {
-    steps {
-        sh '''
-            sleep 5
-            docker ps
-            curl http://localhost:${HOST_PORT}/health
-        '''
-    }
-}
+            steps {
+                sh '''
+                    sleep 5
+                    docker ps
+                    curl -f http://localhost:${HOST_PORT}/health
+                '''
+            }
+        }
 
 
     }

@@ -51,6 +51,7 @@ const GoogleContinueButton = ({
 
   useEffect(() => {
     let cancelled = false;
+    const host = buttonHostRef.current;
 
     const initializeGoogle = async () => {
       const clientId = getGoogleClientId();
@@ -88,10 +89,11 @@ const GoogleContinueButton = ({
               await loginWithGoogle(credential);
               toast({ title: "Welcome!", description: successMessage });
               navigate(redirectPath, { replace: true });
-            } catch (error: any) {
+            } catch (error) {
+              const errorMessage = error instanceof Error ? error.message : "Unable to continue with Google.";
               toast({
                 title: errorTitle,
-                description: error.message || "Unable to continue with Google.",
+                description: errorMessage,
                 variant: "destructive",
               });
             } finally {
@@ -104,12 +106,12 @@ const GoogleContinueButton = ({
 
         setGoogleApiReady(true);
         setGoogleMessage(DEFAULT_MESSAGE);
-      } catch (error: any) {
+      } catch (error) {
         if (!cancelled) {
           setGoogleReady(false);
           setGoogleApiReady(false);
           setGoogleMessage(
-            error.message || "Google sign-in could not be loaded for this environment.",
+            error instanceof Error ? error.message : "Google sign-in could not be loaded for this environment.",
           );
         }
       }
@@ -119,8 +121,8 @@ const GoogleContinueButton = ({
 
     return () => {
       cancelled = true;
-      if (buttonHostRef.current) {
-        buttonHostRef.current.innerHTML = "";
+      if (host) {
+        host.innerHTML = "";
       }
     };
   }, [errorTitle, loginWithGoogle, mode, navigate, redirectPath, successMessage, toast]);
