@@ -4,6 +4,12 @@ import { products as initialProducts } from "@/data/products";
 export interface ApiProduct {
   _id?: string | number;
   id?: string | number;
+  catalog_key?: string;
+  catalogKey?: string;
+  slug?: string;
+  price?: number;
+  base_price_usd?: number;
+  image?: string;
   name?: string;
   description?: string;
   category?: string;
@@ -203,7 +209,11 @@ const resolveCatalogImageUrl = (apiImageUrl?: string, canonicalImageUrl?: string
   return canonicalImageUrl || apiImageUrl;
 };
 
-export const getProductMarketingKey = (category?: string, name?: string) => {
+export const getProductMarketingKey = (category?: string, name?: string, catalogKey?: string) => {
+  if (catalogKey && canonicalProductsByKey[catalogKey]) {
+    return catalogKey;
+  }
+
   const normalizedCategory = (category || "").toLowerCase();
   const normalizedName = (name || "").toLowerCase();
 
@@ -212,7 +222,7 @@ export const getProductMarketingKey = (category?: string, name?: string) => {
   if (normalizedCategory.includes("serum")) return "new-serum";
   if (normalizedCategory.includes("cream")) return "new-cream";
   if (normalizedCategory.includes("mask")) return "new-mask";
-  if (normalizedCategory.includes("bundle")) return "new-bundle";
+  if (normalizedCategory.includes("bundle") || normalizedCategory.includes("kit")) return "new-bundle";
 
   if (normalizedName.includes("cleanser")) return "new-cleanser";
   if (normalizedName.includes("toner")) return "new-toner";
@@ -232,31 +242,46 @@ export const mapApiProduct = (product: ApiProduct): StoreProduct | null => {
     return null;
   }
 
-  const marketingKey = getProductMarketingKey(product.category, product.name);
+  const directKey = product.catalog_key || product.catalogKey || product.slug;
+  const marketingKey = getProductMarketingKey(product.category, product.name, directKey);
   const canonicalProduct = marketingKey ? canonicalProductsByKey[marketingKey] : undefined;
-  const kesPrice = Number(product.prices?.KES?.amount ?? canonicalProduct?.price ?? 0);
+
+  let kesPrice = canonicalProduct?.price ?? 0;
+  if (typeof product.price === "number" && product.price > 0) {
+    kesPrice = Math.round(product.price);
+  } else if (typeof product.prices?.KES?.amount === "number" && product.prices.KES.amount > 0) {
+    kesPrice = Math.round(product.prices.KES.amount);
+  } else if (typeof product.base_price_usd === "number" && product.base_price_usd > 0) {
+    kesPrice = Math.round(product.base_price_usd * 128.5);
+  }
+
   const discountPercentage = Number(
     product.discount_percentage ?? canonicalProduct?.discount_percentage ?? 0,
   );
   const overlay = marketingKey ? productMarketing[marketingKey] ?? {} : {};
-  const resolvedImageUrl = resolveCatalogImageUrl(product.image_url, canonicalProduct?.image_url);
+  const rawImage = product.image_url || product.image;
+  const resolvedImageUrl = resolveCatalogImageUrl(rawImage, canonicalProduct?.image_url);
 
   return {
+    ...canonicalProduct,
+    ...overlay,
     id: String(productId),
     catalogKey: marketingKey || `product-${productId}`,
     name: product.name || canonicalProduct?.name || "Queen Koba Product",
-    description: product.description || canonicalProduct?.description || "",
+    description:
+      product.description !== undefined && product.description !== null && product.description !== ""
+        ? product.description
+        : (canonicalProduct?.description || ""),
     price: kesPrice,
     originalPrice: canonicalProduct?.originalPrice,
-    in_stock: product.in_stock ?? true,
+    in_stock: typeof product.in_stock === "boolean" ? product.in_stock : (canonicalProduct?.in_stock ?? true),
     image: resolvedImageUrl,
     image_url: resolvedImageUrl,
-    rating: product.rating ?? canonicalProduct?.rating ?? 4.8,
-    reviews: product.reviews ?? canonicalProduct?.reviews ?? 0,
+    rating: typeof product.rating === "number" ? product.rating : (canonicalProduct?.rating ?? 4.8),
+    reviews: typeof product.reviews === "number" ? product.reviews : (canonicalProduct?.reviews ?? 0),
     discount_percentage: discountPercentage,
-    on_sale: product.on_sale ?? discountPercentage > 0,
+    on_sale: typeof product.on_sale === "boolean" ? product.on_sale : (discountPercentage > 0),
     isBundle: marketingKey === "new-bundle",
-    ...overlay,
   };
 };
 

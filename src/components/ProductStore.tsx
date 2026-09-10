@@ -4,14 +4,11 @@ import { Link } from "react-router-dom";
 import { Minus, Plus, ShoppingBag, Star } from "lucide-react";
 import AdaptiveImage from "@/components/AdaptiveImage";
 import { useCart } from "@/context/CartContext";
-import { productsAPI } from "@/lib/api";
+import { useStoreProducts } from "@/hooks/use-products";
 import {
-  fallbackStoreProducts,
   formatCurrency,
   getCompareAtPrice,
   getEffectiveProductPrice,
-  mapApiProduct,
-  orderCatalogProducts,
   shopTrustBadges,
   toCartProduct,
   type StoreProduct,
@@ -201,37 +198,7 @@ const ProductCard = ({ product, index }: { product: StoreProduct; index: number 
 const ProductStore = () => {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
-  const [products, setProducts] = useState<StoreProduct[]>(fallbackStoreProducts);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    productsAPI
-      .getAll()
-      .then((data) => {
-        const apiProducts = Array.isArray(data.products)
-          ? data.products
-              .map(mapApiProduct)
-              .filter((product): product is StoreProduct => product !== null)
-          : [];
-
-        if (!cancelled) {
-          setProducts(apiProducts.length > 0 ? orderCatalogProducts(apiProducts) : fallbackStoreProducts);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setProducts(fallbackStoreProducts);
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { products, isLoading: loading } = useStoreProducts();
 
   return (
     <section id="shop" className="py-8 md:py-10 lg:py-12">

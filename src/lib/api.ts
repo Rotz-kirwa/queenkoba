@@ -175,8 +175,16 @@ export const authAPI = {
 
 // Products API
 export const productsAPI = {
-  getAll: (options?: { lite?: boolean; limit?: number; cacheTtlMs?: number }) =>
-    apiClient(
+  getAll: (options?: { lite?: boolean; limit?: number; cacheTtlMs?: number; forceRefresh?: boolean }) => {
+    if (options?.forceRefresh && typeof window !== "undefined") {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith(`${CACHE_PREFIX}products:`)) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
+
+    return apiClient(
       buildEndpointWithQuery('/products', {
         lite: options?.lite ? "true" : undefined,
         limit: options?.limit,
@@ -184,10 +192,21 @@ export const productsAPI = {
       {
         quietError: true,
         cacheKey: `products:${options?.lite ? "lite" : "full"}:${options?.limit ?? "all"}`,
-        cacheTtlMs: options?.cacheTtlMs ?? 1000 * 60 * 5,
+        cacheTtlMs: options?.forceRefresh ? 0 : (options?.cacheTtlMs ?? 1000 * 30),
       },
-    ),
+    );
+  },
   getById: (id: string) => apiClient(`/products/${id}`),
+  invalidateCache: () => {
+    if (typeof window !== "undefined") {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith(`${CACHE_PREFIX}products:`)) {
+          localStorage.removeItem(key);
+        }
+      });
+      window.dispatchEvent(new CustomEvent("qk-products-updated"));
+    }
+  },
 };
 
 // Cart API

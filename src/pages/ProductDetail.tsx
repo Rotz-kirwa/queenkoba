@@ -18,14 +18,11 @@ import { useCart } from "@/context/CartContext";
 import { findBlogPostsBySlugs, homeConcernCards, type LinkCard } from "@/data/siteSeo";
 import { productSeoByKey } from "@/data/seoContent";
 import { defaultKenyaDeliveryZone } from "@/data/kenyaDelivery";
-import { productsAPI } from "@/lib/api";
+import { useStoreProducts } from "@/hooks/use-products";
 import {
-  fallbackStoreProducts,
   formatCurrency,
   getCompareAtPrice,
   getEffectiveProductPrice,
-  mapApiProduct,
-  orderCatalogProducts,
   shopTrustBadges,
   toCartProduct,
   type StoreProduct,
@@ -46,41 +43,8 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const [products, setProducts] = useState<StoreProduct[]>(fallbackStoreProducts);
-  const [loading, setLoading] = useState(true);
+  const { products, isLoading: loading } = useStoreProducts();
   const [quantity, setQuantity] = useState(1);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    productsAPI
-      .getAll({
-        lite: false,
-        cacheTtlMs: 1000 * 60 * 5,
-      })
-      .then((data) => {
-        const apiProducts = Array.isArray(data.products)
-          ? data.products
-              .map(mapApiProduct)
-              .filter((product): product is StoreProduct => product !== null)
-          : [];
-
-        if (!cancelled) {
-          setProducts(apiProducts.length > 0 ? orderCatalogProducts(apiProducts) : fallbackStoreProducts);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setProducts(fallbackStoreProducts);
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const product = useMemo(
     () =>

@@ -314,64 +314,91 @@ def seed_products():
         if mongo.db.products.count_documents({}) == 0:
             products_to_seed = [
                 {
-                    'name': 'Complex Clarifier Cream',
-                    'description': 'A luxurious cream that gently clarifies and purifies complexion',
-                    'base_price_usd': 29.99,
-                    'category': 'Cream',
+                    'catalog_key': 'new-cleanser',
+                    'name': 'Complexion Clarifying Cleanser 120ml',
+                    'description': 'Brightening face cleanser for dull skin, buildup, and uneven skin tone. African botanicals gently clarify and prep melanin-rich skin for toner, serum, and moisturizer without stripping moisture.',
+                    'price': 1899,
+                    'base_price_usd': round(1899 / 128.5, 2),
+                    'category': 'Cleanser',
                     'in_stock': True,
-                    'image_url': '/images/cream.jpg',
+                    'image_url': '/images/products/complexion-clarifying-cleanser.webp',
+                    'rating': 4.8,
+                    'reviews': 87,
                     'created_at': now_utc()
                 },
                 {
-                    'name': 'Complexion Clarifier Serum',
-                    'description': 'Powerful serum with Vitamin C and Niacinamide',
-                    'base_price_usd': 34.50,
-                    'category': 'Serum',
-                    'in_stock': True,
-                    'image_url': '/images/serum.jpg',
-                    'created_at': datetime.utcnow()
-                },
-                {
-                    'name': 'Complexion Clarifying Mask',
-                    'description': 'Detoxifying clay mask with Charcoal and Tea Tree Oil',
-                    'base_price_usd': 25.75,
-                    'category': 'Mask',
-                    'in_stock': True,
-                    'image_url': '/images/mask.jpg',
-                    'created_at': datetime.utcnow()
-                },
-                {
-                    'name': 'Complexion Renewal Scrub',
-                    'description': 'Gentle exfoliating scrub with Jojoba beads',
-                    'base_price_usd': 21.99,
-                    'category': 'Scrub',
-                    'in_stock': True,
-                    'image_url': '/images/scrub.jpg',
-                    'created_at': datetime.utcnow()
-                },
-                {
-                    'name': 'Rich Gentle Foaming Lather',
-                    'description': 'Creamy foaming cleanser',
-                    'base_price_usd': 18.50,
-                    'category': 'Cleanser',
-                    'in_stock': True,
-                    'image_url': '/images/cleanser.jpg',
-                    'created_at': datetime.utcnow()
-                },
-                {
-                    'name': 'Eternal Radiance Toner',
-                    'description': 'Alcohol-free toner with Witch Hazel',
-                    'base_price_usd': 23.25,
+                    'catalog_key': 'new-toner',
+                    'name': 'Brightening Toner 120ml',
+                    'description': 'Brightening toner for dark spots, uneven skin tone, and post-blemish marks. Licorice root and aloe help refresh, hydrate, and support a more even-looking glow for melanin-rich skin.',
+                    'price': 1999,
+                    'base_price_usd': round(1999 / 128.5, 2),
                     'category': 'Toner',
                     'in_stock': True,
-                    'image_url': '/images/toner.jpg',
-                    'created_at': datetime.utcnow()
+                    'image_url': '/images/products/brightening-toner.webp',
+                    'rating': 4.7,
+                    'reviews': 64,
+                    'created_at': now_utc()
+                },
+                {
+                    'catalog_key': 'new-serum',
+                    'name': 'Complexion Clarifying Serum 30ml',
+                    'description': 'Dark spot corrector serum for hyperpigmentation, post-acne marks, and uneven skin tone. Liwa and moringa help melanin-rich skin look brighter, clearer, and more even with consistent use.',
+                    'price': 2499,
+                    'base_price_usd': round(2499 / 128.5, 2),
+                    'category': 'Serum',
+                    'in_stock': True,
+                    'image_url': '/images/products/complexion-clarifying-serum.webp',
+                    'rating': 4.9,
+                    'reviews': 112,
+                    'created_at': now_utc()
+                },
+                {
+                    'catalog_key': 'new-cream',
+                    'name': 'Complexion Clarifying Cream 50ml',
+                    'description': 'Skin brightening cream for uneven skin tone, dryness, and dull skin. Shea and snail mucin help lock in hydration while supporting a smoother, more radiant-looking complexion.',
+                    'price': 2399,
+                    'base_price_usd': round(2399 / 128.5, 2),
+                    'category': 'Cream',
+                    'in_stock': True,
+                    'image_url': '/images/products/complexion-clarifying-cream.webp',
+                    'rating': 4.8,
+                    'reviews': 95,
+                    'created_at': now_utc()
+                },
+                {
+                    'catalog_key': 'new-mask',
+                    'name': 'Brightening Face Mask 120ml',
+                    'description': 'Face brightening mask for dull skin, buildup, and uneven tone. Qasil and aloe help clarify, soften, and refresh skin as part of a weekly glow-focused routine.',
+                    'price': 1499,
+                    'base_price_usd': round(1499 / 128.5, 2),
+                    'category': 'Mask',
+                    'in_stock': True,
+                    'image_url': '/images/products/brightening-face-mask.webp',
+                    'rating': 4.8,
+                    'reviews': 76,
+                    'created_at': now_utc()
+                },
+                {
+                    'catalog_key': 'new-bundle',
+                    'name': 'Full Product Kit',
+                    'description': 'Complete skincare kit for hyperpigmentation, dark spots, and glowing skin. Includes cleanser, toner, serum, cream, and mask for a full routine designed for melanin-rich skin.',
+                    'price': 9999,
+                    'base_price_usd': round(9999 / 128.5, 2),
+                    'category': 'Bundle',
+                    'in_stock': True,
+                    'image_url': '/images/products/full-product-kit.webp',
+                    'rating': 5.0,
+                    'reviews': 200,
+                    'created_at': now_utc()
                 }
             ]
             
             # Add calculated prices to each product
             for product in products_to_seed:
-                product['prices'] = calculate_prices(product['base_price_usd'])
+                product_prices = calculate_prices(product['base_price_usd'])
+                if product.get('price'):
+                    product_prices['KES']['amount'] = product['price']
+                product['prices'] = product_prices
             
             # Insert products
             mongo.db.products.insert_many(products_to_seed)
@@ -1365,17 +1392,23 @@ def admin_create_product():
     # UI price is shown in KES, convert to USD for storage.
     price_kes = float(data.get('price', 0))
     base_price_usd = round(price_kes / 128.5, 2) if price_kes > 0 else float(data.get('base_price_usd', 0))
-    if base_price_usd <= 0:
+    if base_price_usd <= 0 and price_kes <= 0:
         return jsonify({'error': 'A valid price is required'}), 400
 
+    prices = calculate_prices(base_price_usd)
+    if price_kes > 0:
+        prices['KES']['amount'] = price_kes
+
     product = {
+        'catalog_key': data.get('catalog_key') or data.get('catalogKey') or '',
         'name': data['name'],
         'description': data['description'],
+        'price': price_kes if price_kes > 0 else round(base_price_usd * 128.5),
         'base_price_usd': base_price_usd,
         'category': data.get('category', 'General'),
         'in_stock': bool(data.get('in_stock', True)),
         'image_url': data.get('image') or data.get('image_url') or '',
-        'prices': calculate_prices(base_price_usd),
+        'prices': prices,
         'created_at': now_utc(),
         'updated_at': now_utc()
     }
@@ -1388,6 +1421,8 @@ def admin_update_product(product_id):
     data = request.get_json() or {}
     update_fields = {}
 
+    if 'catalog_key' in data or 'catalogKey' in data:
+        update_fields['catalog_key'] = data.get('catalog_key') or data.get('catalogKey')
     if 'name' in data:
         update_fields['name'] = data['name']
     if 'description' in data:
@@ -1398,10 +1433,14 @@ def admin_update_product(product_id):
         update_fields['in_stock'] = bool(data['in_stock'])
     if 'image' in data or 'image_url' in data:
         update_fields['image_url'] = data.get('image') or data.get('image_url') or ''
-    if 'price' in data and data.get('price'):
-        base_price_usd = round(float(data['price']) / 128.5, 2)
+    if 'price' in data and data.get('price') is not None:
+        price_kes = float(data['price'])
+        base_price_usd = round(price_kes / 128.5, 2)
         update_fields['base_price_usd'] = base_price_usd
-        update_fields['prices'] = calculate_prices(base_price_usd)
+        calculated_prices = calculate_prices(base_price_usd)
+        calculated_prices['KES']['amount'] = price_kes
+        update_fields['prices'] = calculated_prices
+        update_fields['price'] = price_kes
 
     if not update_fields:
         return jsonify({'error': 'No updatable fields provided'}), 400
