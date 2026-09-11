@@ -24,7 +24,6 @@ files=(
     "vite.config.ts"
     "koba--backend-only/backend/queen-koba-backend/requirements.txt"
     "koba--backend-only/backend/queen-koba-backend/queenkoba_mongodb.py"
-    "koba--backend-only/admin-dashboard/package.json"
 )
 
 for file in "${files[@]}"; do
@@ -40,13 +39,6 @@ echo ""
 echo "✓ Building frontend..."
 npm run build:frontend
 echo "✅ Frontend built successfully"
-
-# Build admin
-echo ""
-echo "✓ Building admin panel..."
-npm run install:admin
-npm run build:admin
-echo "✅ Admin panel built successfully"
 
 # Check backend dependencies
 echo ""
@@ -80,9 +72,9 @@ echo "4. Deploy Frontend as Static Site:"
 echo "   - Build Command: npm install && npm run build:frontend"
 echo "   - Publish Directory: dist"
 echo ""
-echo "5. Deploy Admin as Static Site:"
-echo "   - Build Command: npm run install:admin && npm run build:admin"
-echo "   - Publish Directory: koba--backend-only/admin-dashboard/dist"
+echo "5. Deploy Admin Dashboard:"
+echo "   - Deployed independently from: https://github.com/Rotz-kirwa/queenkoba.admin.workspace"
+echo "   - Live URL: https://queenkoba-admin-workspace.vercel.app"
 echo ""
 echo "📖 For detailed instructions, see: RENDER_DEPLOYMENT_GUIDE.md"
 echo ""
