@@ -1,6 +1,6 @@
-# Queen Koba Admin Dashboard
+# queenkoba.admin.workspace
 
-Admin panel for managing Queen Koba e-commerce platform.
+Queen Koba Admin Dashboard - Admin panel for managing Queen Koba e-commerce platform.
 
 ## Features
 
