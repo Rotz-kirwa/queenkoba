@@ -2,11 +2,85 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>queen-koba-admin</title>
+    <meta name="theme-color" content="#8B6F47" />
+    <meta name="msapplication-TileColor" content="#8B6F47" />
+    <title>Queen Koba Admin</title>
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+    <meta
+      name="description"
+      content="Queen Koba Admin Dashboard for managing products, orders, customers, analytics, and operations."
+    />
+    <meta name="application-name" content="Queen Koba Admin" />
+    <meta name="apple-mobile-web-app-title" content="Queen Koba Admin" />
+    <link rel="icon" type="image/x-icon" href="/favicon-qk-v20260411.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-qk-v20260411.png" />
+    <link rel="manifest" href="/site-admin-qk-v20260411.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Queen Koba" />
+    <meta property="og:title" content="Queen Koba Admin" />
+    <meta property="og:url" content="https://queenkoba.com" />
+    <meta
+      property="og:description"
+      content="Queen Koba Admin Dashboard for managing products, orders, customers, analytics, and operations."
+    />
+    <meta property="og:image" content="/queen-koba-logo.jpg?v=20260325" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Queen Koba Admin" />
+    <meta
+      name="twitter:description"
+      content="Queen Koba Admin Dashboard for managing products, orders, customers, analytics, and operations."
+    />
+    <meta name="twitter:image" content="/queen-koba-logo.jpg?v=20260325" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Queen Koba",
+        "url": "https://queenkoba.com",
+        "logo": "https://queenkoba.com/queen-koba-logo.jpg?v=20260325",
+        "image": "https://queenkoba.com/queen-koba-logo.jpg?v=20260325"
+      }
+    </script>
   </head>
   <body>
+    <script>
+      (function() {
+        var cryptoLike = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined;
+        if (!cryptoLike || typeof cryptoLike.randomUUID === 'function') {
+          return;
+        }
+
+        var fallback = function() {
+          if (cryptoLike && typeof cryptoLike.getRandomValues === 'function') {
+            return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, function(char) {
+              return (
+                Number(char) ^
+                ((cryptoLike.getRandomValues(new Uint8Array(1))[0] & 15) >> (Number(char) / 4))
+              ).toString(16);
+            });
+          }
+
+          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(char) {
+            var value = Math.floor(Math.random() * 16);
+            var resolved = char === 'x' ? value : (value & 0x3) | 0x8;
+            return resolved.toString(16);
+          });
+        };
+
+        try {
+          Object.defineProperty(cryptoLike, 'randomUUID', {
+            configurable: true,
+            value: fallback
+          });
+        } catch (_) {
+          globalThis.__queenkobaAdminRandomUUID = fallback;
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

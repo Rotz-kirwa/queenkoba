@@ -1,488 +1,509 @@
-import { useState, useEffect } from 'react';
-import { adminAPI } from '@/lib/api';
-import { Plus, Edit, Trash2, X, Check, Loader2 } from 'lucide-react';
-
-interface ProductItem {
-  id: string;
-  catalog_key?: string;
-  name: string;
-  price: number;
-  description: string;
-  category?: string;
-  image: string;
-  in_stock?: boolean;
-}
-
-const DEFAULT_PRODUCTS: ProductItem[] = [
-  {
-    id: 'new-cleanser',
-    catalog_key: 'new-cleanser',
-    name: 'Complexion Clarifying Cleanser 120ml',
-    price: 1899,
-    description: 'Brightening face cleanser for dull skin, buildup, and uneven skin tone.',
-    category: 'Cleanser',
-    image: '/images/products/complexion-clarifying-cleanser.webp',
-    in_stock: true,
-  },
-  {
-    id: 'new-toner',
-    catalog_key: 'new-toner',
-    name: 'Brightening Toner 120ml',
-    price: 1999,
-    description: 'Brightening toner for dark spots, uneven skin tone, and post-blemish marks.',
-    category: 'Toner',
-    image: '/images/products/brightening-toner.webp',
-    in_stock: true,
-  },
-  {
-    id: 'new-serum',
-    catalog_key: 'new-serum',
-    name: 'Complexion Clarifying Serum 30ml',
-    price: 2499,
-    description: 'Dark spot corrector serum for hyperpigmentation, post-acne marks, and uneven skin tone.',
-    category: 'Serum',
-    image: '/images/products/complexion-clarifying-serum.webp',
-    in_stock: true,
-  },
-  {
-    id: 'new-cream',
-    catalog_key: 'new-cream',
-    name: 'Complexion Clarifying Cream 50ml',
-    price: 2399,
-    description: 'Skin brightening cream for uneven skin tone, dryness, and dull skin.',
-    category: 'Cream',
-    image: '/images/products/complexion-clarifying-cream.webp',
-    in_stock: true,
-  },
-  {
-    id: 'new-mask',
-    catalog_key: 'new-mask',
-    name: 'Brightening Face Mask 120ml',
-    price: 1499,
-    description: 'Face brightening mask for dull skin, buildup, and uneven tone.',
-    category: 'Mask',
-    image: '/images/products/brightening-face-mask.webp',
-    in_stock: true,
-  },
-  {
-    id: 'new-bundle',
-    catalog_key: 'new-bundle',
-    name: 'Full Product Kit',
-    price: 9999,
-    description: 'Complete skincare kit for hyperpigmentation, dark spots, and glowing skin.',
-    category: 'Bundle',
-    image: '/images/products/full-product-kit.webp',
-    in_stock: true,
-  },
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Search, Edit, Trash2, X } from 'lucide-react';
+import { api } from '../lib/api';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Products() {
-  const [products, setProducts] = useState<ProductItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState('');
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    description: '',
+    category: 'Cream',
+    kes_price: '',
+    in_stock: true,
+    image_url: '',
+    discount_percentage: 0,
+    on_sale: false,
+  });
+  const queryClient = useQueryClient();
 
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const openAddProductModal = () => {
+    setAddingProduct(true);
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set('action', 'new');
+    setSearchParams(nextSearchParams, { replace: true });
+  };
 
-  // Form Fields
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState<number | ''>('');
-  const [category, setCategory] = useState('');
-  const [catalogKey, setCatalogKey] = useState('');
-  const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
-  const [inStock, setInStock] = useState(true);
+  const closeAddProductModal = () => {
+    setAddingProduct(false);
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.delete('action');
+    setSearchParams(nextSearchParams, { replace: true });
+  };
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    setAddingProduct(searchParams.get('action') === 'new');
+  }, [searchParams]);
+  
+  const { data, isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.getProducts,
+  });
 
-  const notifyStorefront = () => {
-    try {
-      localStorage.setItem('qk_admin_product_updated', Date.now().toString());
-      window.dispatchEvent(new CustomEvent('qk-products-updated'));
-    } catch {
-      // Ignore cross-origin localStorage restriction if any
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.updateProduct(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setEditingProduct(null);
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: any) => api.createProduct(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      closeAddProductModal();
+      setNewProduct({ 
+        name: '', 
+        description: '', 
+        category: 'Cream', 
+        kes_price: '', 
+        in_stock: true, 
+        image_url: '',
+        discount_percentage: 0,
+        on_sale: false
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.deleteProduct(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+
+  const products = data?.products || [];
+  const filteredProducts = products.filter((p: any) =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const getKESPrice = (product: any) => {
+    // Handle both array format and object format
+    if (Array.isArray(product.prices)) {
+      const kesPrice = product.prices.find((p: any) => p.currency === 'KES');
+      return kesPrice?.price || 0;
+    } else if (product.prices && typeof product.prices === 'object') {
+      // Handle object format like { KES: { amount: 3850 } }
+      return product.prices.KES?.amount || 0;
     }
+    return 0;
   };
 
-  const loadProducts = async () => {
-    try {
-      const data = await adminAPI.getProducts();
-      if (Array.isArray(data) && data.length > 0) {
-        setProducts(
-          data.map((product: any) => ({
-            id: String(product.id || product._id),
-            catalog_key: product.catalog_key || product.catalogKey,
-            name: product.name,
-            price:
-              typeof product.price === 'number'
-                ? product.price
-                : product.prices?.KES?.amount
-                ? Math.round(product.prices.KES.amount)
-                : Math.round((product.base_price_usd || 0) * 128.5),
-            description: product.description || '',
-            category: product.category || 'General',
-            image: product.image || product.image_url || '/images/products/complexion-clarifying-serum.webp',
-            in_stock: product.in_stock ?? true,
-          }))
-        );
-      } else {
-        setProducts(DEFAULT_PRODUCTS);
+  const handleEdit = (product: any) => {
+    setEditingProduct({
+      ...product,
+      kes_price: getKESPrice(product),
+    });
+  };
+
+  const handleUpdate = () => {
+    if (!editingProduct) return;
+    
+    // Handle both array and object price formats
+    let updatedPrices;
+    if (Array.isArray(editingProduct.prices)) {
+      updatedPrices = editingProduct.prices.map((p: any) => 
+        p.currency === 'KES' ? { ...p, price: Number(editingProduct.kes_price) } : p
+      );
+      if (!updatedPrices.some((p: any) => p.currency === 'KES')) {
+        updatedPrices.push({ currency: 'KES', price: Number(editingProduct.kes_price), country: 'Kenya' });
       }
-    } catch (error) {
-      console.error('Failed to load products from API, using catalog default:', error);
-      setProducts(DEFAULT_PRODUCTS);
-    } finally {
-      setLoading(false);
+    } else {
+      // Object format
+      updatedPrices = {
+        ...editingProduct.prices,
+        KES: { amount: Number(editingProduct.kes_price), symbol: 'KSh', country: 'Kenya' }
+      };
+    }
+
+    updateMutation.mutate({
+      id: editingProduct._id,
+      data: {
+        name: editingProduct.name,
+        description: editingProduct.description,
+        category: editingProduct.category,
+        in_stock: editingProduct.in_stock,
+        prices: updatedPrices,
+        image_url: editingProduct.image_url,
+        discount_percentage: editingProduct.discount_percentage || 0,
+        on_sale: editingProduct.on_sale || false
+      },
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this product?')) {
+      deleteMutation.mutate(id);
     }
   };
 
-  const openCreateModal = () => {
-    setEditingProduct(null);
-    setName('');
-    setPrice('');
-    setCategory('Serum');
-    setCatalogKey('');
-    setDescription('');
-    setImage('/images/products/complexion-clarifying-serum.webp');
-    setInStock(true);
-    setFormError(null);
-    setFormSuccess(null);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (product: ProductItem) => {
-    setEditingProduct(product);
-    setName(product.name);
-    setPrice(product.price);
-    setCategory(product.category || 'General');
-    setCatalogKey(product.catalog_key || product.id);
-    setDescription(product.description);
-    setImage(product.image);
-    setInStock(product.in_stock ?? true);
-    setFormError(null);
-    setFormSuccess(null);
-    setIsModalOpen(true);
-  };
-
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      setFormError('Product name is required');
-      return;
-    }
-    if (!price || Number(price) <= 0) {
-      setFormError('A valid price in KSh is required');
-      return;
-    }
-
-    setSaving(true);
-    setFormError(null);
-    setFormSuccess(null);
-
-    const payload = {
-      name: name.trim(),
-      price: Number(price),
-      category: category.trim() || 'General',
-      catalog_key: catalogKey.trim() || undefined,
-      description: description.trim(),
-      image_url: image.trim(),
-      image: image.trim(),
-      in_stock: inStock,
+  const handleCreate = () => {
+    if (!newProduct.name || !newProduct.kes_price) return;
+    
+    const kesAmount = Number(newProduct.kes_price);
+    const prices = {
+      KES: { amount: kesAmount, symbol: 'KSh', country: 'Kenya' },
+      UGX: { amount: Math.round(kesAmount * 27.88), symbol: 'USh', country: 'Uganda' },
+      BIF: { amount: Math.round(kesAmount * 22.18), symbol: 'FBu', country: 'Burundi' },
+      CDF: { amount: Math.round(kesAmount * 21.01), symbol: 'FC', country: 'DRC Congo' }
     };
 
-    try {
-      if (editingProduct) {
-        await adminAPI.updateProduct(editingProduct.id, payload);
-        setFormSuccess('Product updated successfully! Reflected on storefront.');
-      } else {
-        await adminAPI.createProduct(payload);
-        setFormSuccess('Product created successfully! Reflected on storefront.');
-      }
-
-      notifyStorefront();
-      await loadProducts();
-      setTimeout(() => {
-        setIsModalOpen(false);
-      }, 700);
-    } catch (error: any) {
-      console.error('Save product error:', error);
-      // If API fails (e.g. mock mode or offline backend), update local state as graceful preview
-      if (editingProduct) {
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === editingProduct.id
-              ? { ...p, ...payload, price: Number(price) }
-              : p
-          )
-        );
-        notifyStorefront();
-        setFormSuccess('Product updated locally.');
-        setTimeout(() => setIsModalOpen(false), 700);
-      } else {
-        setFormError(error.message || 'Failed to save product');
-      }
-    } finally {
-      setSaving(false);
-    }
+    createMutation.mutate({
+      name: newProduct.name,
+      description: newProduct.description,
+      category: newProduct.category,
+      in_stock: newProduct.in_stock,
+      base_price_usd: Math.round((kesAmount / 128.5) * 100) / 100,
+      prices: prices,
+      image_url: newProduct.image_url || '/images/product.jpg',
+      discount_percentage: newProduct.discount_percentage || 0,
+      on_sale: newProduct.on_sale || false,
+    });
   };
-
-  const deleteProduct = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-    try {
-      await adminAPI.deleteProduct(id);
-      notifyStorefront();
-      loadProducts();
-    } catch (error) {
-      console.error('Failed to delete product:', error);
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-      notifyStorefront();
-    }
-  };
-
-  if (loading) return <div className="p-4 lg:p-8 pt-20 lg:pt-8 text-gray-500 font-medium">Loading products...</div>;
 
   return (
-    <div className="p-4 lg:p-8 pt-20 lg:pt-8 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 lg:mb-8">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-gray-900">Products Management</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Manage product catalog, prices, descriptions, and stock. Changes sync to the Home page and Shop page.
-          </p>
+          <h1 className="text-3xl font-serif text-gray-900">Products</h1>
+          <p className="text-gray-500 mt-1">Manage your product catalog</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="bg-amber-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 hover:bg-amber-800 transition-colors text-sm font-semibold shadow-sm w-full sm:w-auto justify-center"
+        <button 
+          onClick={openAddProductModal}
+          className="admin-btn-primary flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
           Add Product
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product) => (
-          <div
-            key={product.id}
-            className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col transition-shadow hover:shadow-md"
-          >
-            <div className="relative h-48 bg-gray-100 overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/images/products/complexion-clarifying-serum.webp';
-                }}
-              />
-              <div className="absolute top-3 right-3 flex gap-1">
-                {product.in_stock ? (
-                  <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
-                    In Stock
-                  </span>
-                ) : (
-                  <span className="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
-                    Out of Stock
-                  </span>
-                )}
-              </div>
-              {product.category && (
-                <div className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded shadow">
-                  {product.category}
-                </div>
-              )}
-            </div>
-
-            <div className="p-5 flex flex-1 flex-col justify-between">
-              <div>
-                <h3 className="font-bold text-base text-gray-900 line-clamp-1">{product.name}</h3>
-                <p className="text-gray-500 text-xs mt-1 line-clamp-2 leading-relaxed">
-                  {product.description}
-                </p>
-              </div>
-
-              <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
-                <span className="text-xl font-bold text-amber-900">
-                  KSh {product.price.toLocaleString()}
-                </span>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => openEditModal(product)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Edit Product"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => deleteProduct(product.id)}
-                    className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                    title="Delete Product"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
+      <div className="admin-card p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B6F47]"
+            />
           </div>
-        ))}
+        </div>
+
+        {isLoading ? (
+          <div className="text-center py-12">Loading products...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 font-semibold text-sm">Product</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm">Category</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm">Price (KES)</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm">Stock</th>
+                  <th className="text-right py-3 px-4 font-semibold text-sm">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map((product: any) => (
+                  <tr key={product._id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-4">
+                      <div className="font-medium">{product.name}</div>
+                      <div className="text-sm text-gray-500">{product.description?.substring(0, 50)}...</div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        {product.category}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">KES {getKESPrice(product).toLocaleString()}</td>
+                    <td className="py-4 px-4">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        product.in_stock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => handleEdit(product)}
+                          className="p-2 hover:bg-gray-100 rounded-lg"
+                        >
+                          <Edit className="w-4 h-4 text-gray-600" />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(product._id)}
+                          className="p-2 hover:bg-gray-100 rounded-lg"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* Edit / Create Product Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative my-8 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">
-                {editingProduct ? 'Edit Product' : 'Add New Product'}
-              </h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
-              >
+      {editingProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Edit Product</h2>
+              <button onClick={() => setEditingProduct(null)}>
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {formError && (
-              <div className="mt-4 p-3 bg-rose-50 text-rose-700 text-xs rounded-lg border border-rose-200">
-                {formError}
-              </div>
-            )}
-
-            {formSuccess && (
-              <div className="mt-4 p-3 bg-emerald-50 text-emerald-700 text-xs rounded-lg border border-emerald-200 flex items-center gap-2">
-                <Check className="w-4 h-4" />
-                {formSuccess}
-              </div>
-            )}
-
-            <form onSubmit={handleSaveProduct} className="mt-4 space-y-4 text-sm">
+            
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Product Name *
-                </label>
+                <label className="block text-sm font-medium mb-1">Name</label>
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Complexion Clarifying Serum 30ml"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700 text-sm"
+                  value={editingProduct.name}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg"
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Price (KSh) *
-                  </label>
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                    placeholder="2499"
-                    required
-                    min={1}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Category
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700 text-sm"
-                  >
-                    <option value="Serum">Serum</option>
-                    <option value="Cleanser">Cleanser</option>
-                    <option value="Toner">Toner</option>
-                    <option value="Cream">Cream</option>
-                    <option value="Mask">Mask</option>
-                    <option value="Bundle">Bundle</option>
-                    <option value="General">General</option>
-                  </select>
-                </div>
-              </div>
-
+              
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Catalog Key / Slug
-                </label>
-                <input
-                  type="text"
-                  value={catalogKey}
-                  onChange={(e) => setCatalogKey(e.target.value)}
-                  placeholder="e.g. new-serum, new-cleanser, new-bundle"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700 text-sm"
-                />
-                <span className="text-[11px] text-gray-400">Used for URL routes like /shop/new-serum</span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Image URL
-                </label>
-                <input
-                  type="text"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="/images/products/complexion-clarifying-serum.webp"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium mb-1">Description</label>
                 <textarea
+                  value={editingProduct.description}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg"
                   rows={3}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Dark spot corrector serum for hyperpigmentation..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700/20 focus:border-amber-700 text-sm resize-none"
                 />
               </div>
-
-              <div className="flex items-center gap-3 pt-1">
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Price (KES)</label>
                 <input
-                  type="checkbox"
-                  id="in_stock"
-                  checked={inStock}
-                  onChange={(e) => setInStock(e.target.checked)}
-                  className="h-4 w-4 text-amber-700 border-gray-300 rounded focus:ring-amber-700"
+                  type="number"
+                  value={editingProduct.kes_price}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, kes_price: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg"
                 />
-                <label htmlFor="in_stock" className="text-xs font-medium text-gray-700 select-none cursor-pointer">
-                  Product is In Stock and Available for Purchase
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Discount (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={editingProduct.discount_percentage || 0}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, discount_percentage: Number(e.target.value) })}
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Image URL</label>
+                <input
+                  type="text"
+                  value={editingProduct.image_url || ''}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, image_url: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editingProduct.on_sale}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, on_sale: e.target.checked })}
+                  />
+                  <span className="text-sm font-medium">On Sale</span>
                 </label>
               </div>
-
-              <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end gap-3">
+              
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editingProduct.in_stock}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, in_stock: e.target.checked })}
+                  />
+                  <span className="text-sm font-medium">In Stock</span>
+                </label>
+              </div>
+              
+              <div className="flex gap-2 pt-4">
                 <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={saving}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-xs font-semibold"
+                  onClick={handleUpdate}
+                  disabled={updateMutation.isPending}
+                  className="flex-1 bg-[#8B6F47] text-white py-2 rounded-lg hover:bg-[#6d5638]"
+                >
+                  {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button
+                  onClick={() => setEditingProduct(null)}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-5 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-colors text-xs font-semibold flex items-center gap-2 shadow-sm disabled:opacity-70"
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {addingProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Add New Product</h2>
+              <button onClick={closeAddProductModal}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Name</label>
+                <input
+                  type="text"
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="Product name"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Description</label>
+                <textarea
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  rows={3}
+                  placeholder="Product description"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Category</label>
+                <select
+                  value={newProduct.category}
+                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg"
                 >
-                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  {editingProduct ? 'Save Changes' : 'Create Product'}
+                  <option value="Cream">Cream</option>
+                  <option value="Serum">Serum</option>
+                  <option value="Mask">Mask</option>
+                  <option value="Scrub">Scrub</option>
+                  <option value="Cleanser">Cleanser</option>
+                  <option value="Toner">Toner</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Price (KES)</label>
+                <input
+                  type="number"
+                  value={newProduct.kes_price}
+                  onChange={(e) => setNewProduct({ ...newProduct, kes_price: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="0"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Image URL</label>
+                <input
+                  type="text"
+                  value={newProduct.image_url}
+                  onChange={(e) => setNewProduct({ ...newProduct, image_url: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Or Upload Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setNewProduct({ ...newProduct, image_url: reader.result as string });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                />
+                {newProduct.image_url && (
+                  <img src={newProduct.image_url} alt="Preview" className="mt-2 w-full h-64 object-cover rounded" />
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Discount (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={newProduct.discount_percentage || 0}
+                  onChange={(e) => setNewProduct({ ...newProduct, discount_percentage: Number(e.target.value) })}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="0"
+                />
+              </div>
+              
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={newProduct.on_sale || false}
+                    onChange={(e) => setNewProduct({ ...newProduct, on_sale: e.target.checked })}
+                  />
+                  <span className="text-sm font-medium">On Sale</span>
+                </label>
+              </div>
+              
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={newProduct.in_stock}
+                    onChange={(e) => setNewProduct({ ...newProduct, in_stock: e.target.checked })}
+                  />
+                  <span className="text-sm font-medium">In Stock</span>
+                </label>
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <button
+                  onClick={handleCreate}
+                  disabled={createMutation.isPending || !newProduct.name || !newProduct.kes_price}
+                  className="flex-1 bg-[#8B6F47] text-white py-2 rounded-lg hover:bg-[#6d5638] disabled:opacity-50"
+                >
+                  {createMutation.isPending ? 'Creating...' : 'Create Product'}
+                </button>
+                <button
+                  onClick={closeAddProductModal}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
