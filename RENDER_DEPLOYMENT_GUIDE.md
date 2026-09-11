@@ -53,8 +53,8 @@ git push origin main
    - Click **Create Database**
 
 3. **Active Connection Details:**
-   - **Internal Database URL** (for backend): `postgresql://queenkoba_db_53bf_user:mFE0gvRyJMYjcqPaqWHAXRJuekqT2LU1@dpg-d9ouv0u7bikc73846kp0-a/queenkoba_db_53bf`
-   - **External Database URL** (for local CLI / migrations): `postgresql://queenkoba_db_53bf_user:mFE0gvRyJMYjcqPaqWHAXRJuekqT2LU1@dpg-d9ouv0u7bikc73846kp0-a.virginia-postgres.render.com/queenkoba_db_53bf`
+   - **Internal Database URL** (for backend): `postgresql://mqulima_db_8hkt_user:J1Xpox2VtlIiIMGZCic6x9FvPsqlviMc@dpg-dahetoafngtc7397clsg-a/mqulima_db_8hkt`
+   - **External Database URL** (for local CLI / migrations): `postgresql://mqulima_db_8hkt_user:J1Xpox2VtlIiIMGZCic6x9FvPsqlviMc@dpg-dahetoafngtc7397clsg-a.virginia-postgres.render.com/mqulima_db_8hkt`
 
 ---
 
@@ -81,8 +81,8 @@ git push origin main
 In Render, go to **Environment** and add these variables:
 
 ```env
-DATABASE_URL = postgresql://queenkoba_db_53bf_user:mFE0gvRyJMYjcqPaqWHAXRJuekqT2LU1@dpg-d9ouv0u7bikc73846kp0-a/queenkoba_db_53bf
-EXTERNAL_DATABASE_URL = postgresql://queenkoba_db_53bf_user:mFE0gvRyJMYjcqPaqWHAXRJuekqT2LU1@dpg-d9ouv0u7bikc73846kp0-a.virginia-postgres.render.com/queenkoba_db_53bf
+DATABASE_URL = postgresql://mqulima_db_8hkt_user:J1Xpox2VtlIiIMGZCic6x9FvPsqlviMc@dpg-dahetoafngtc7397clsg-a/mqulima_db_8hkt
+EXTERNAL_DATABASE_URL = postgresql://mqulima_db_8hkt_user:J1Xpox2VtlIiIMGZCic6x9FvPsqlviMc@dpg-dahetoafngtc7397clsg-a.virginia-postgres.render.com/mqulima_db_8hkt
 FRONTEND_URL = https://queenkoba.vercel.app
 ADMIN_URL = https://queenkoba-admin.vercel.app
 M_PESA_ENV = production
