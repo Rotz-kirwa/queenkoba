@@ -25,9 +25,9 @@ services:
       - key: FRONTEND_URL
         value: https://www.queenkoba.com
       - key: ADMIN_URL
-        value: https://queenkoba-admin.vercel.app
+        value: https://queenkoba-admin-workspace.vercel.app
       - key: CORS_ORIGINS
-        value: https://www.queenkoba.com,https://queenkoba.com,https://queenkoba.vercel.app,https://queenkoba-admin.vercel.app
+        value: https://queenkoba.vercel.app,https://www.queenkoba.com,https://queenkoba.com,https://queenkoba-admin-workspace.vercel.app,https://queenkoba-admin.vercel.app
       - key: M_PESA_ENV
         value: production
       - key: M_PESA_APP_NAME

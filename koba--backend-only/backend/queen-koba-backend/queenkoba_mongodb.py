@@ -18,16 +18,45 @@ import urllib.error
 # Load environment variables
 load_dotenv()
 
+# CORS Configuration
+raw_cors_origins = os.getenv(
+    'CORS_ORIGINS',
+    'https://queenkoba.vercel.app,https://www.queenkoba.com,https://queenkoba.com,https://queenkoba-admin-workspace.vercel.app,https://queenkoba-admin.vercel.app'
+)
+ALLOWED_ORIGINS = {
+    orig.strip().rstrip('/')
+    for orig in raw_cors_origins.split(',')
+    if orig.strip()
+}
+ALLOWED_ORIGINS.update([
+    'https://queenkoba.vercel.app',
+    'https://www.queenkoba.com',
+    'https://queenkoba.com',
+    'https://queenkoba-admin-workspace.vercel.app',
+    'https://queenkoba-admin.vercel.app',
+])
+
+def resolve_allowed_origin(origin):
+    if not origin:
+        return '*'
+    normalized = origin.strip().rstrip('/')
+    if normalized in ALLOWED_ORIGINS:
+        return origin
+    if normalized.startswith(('http://localhost', 'http://127.0.0.1')):
+        return origin
+    return origin
+
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": list(ALLOWED_ORIGINS)}}, supports_credentials=True)
 
 @app.after_request
 def add_cors_headers(response):
     origin = request.headers.get('Origin')
-    if origin:
-        response.headers['Access-Control-Allow-Origin'] = origin
+    allowed = resolve_allowed_origin(origin)
+    if allowed:
+        response.headers['Access-Control-Allow-Origin'] = allowed
     else:
-        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Origin'] = 'https://queenkoba.vercel.app'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
     response.headers['Access-Control-Allow-Credentials'] = 'true'
@@ -39,10 +68,11 @@ def add_cors_headers(response):
 def options_handler(path):
     response = jsonify({'status': 'ok'})
     origin = request.headers.get('Origin')
-    if origin:
-        response.headers['Access-Control-Allow-Origin'] = origin
+    allowed = resolve_allowed_origin(origin)
+    if allowed:
+        response.headers['Access-Control-Allow-Origin'] = allowed
     else:
-        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Origin'] = 'https://queenkoba.vercel.app'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
     response.headers['Access-Control-Allow-Credentials'] = 'true'

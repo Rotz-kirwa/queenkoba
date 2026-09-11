@@ -84,7 +84,8 @@ In Render, go to **Environment** and add these variables:
 DATABASE_URL = postgresql://mqulima_db_8hkt_user:J1Xpox2VtlIiIMGZCic6x9FvPsqlviMc@dpg-dahetoafngtc7397clsg-a/mqulima_db_8hkt
 EXTERNAL_DATABASE_URL = postgresql://mqulima_db_8hkt_user:J1Xpox2VtlIiIMGZCic6x9FvPsqlviMc@dpg-dahetoafngtc7397clsg-a.virginia-postgres.render.com/mqulima_db_8hkt
 FRONTEND_URL = https://queenkoba.vercel.app
-ADMIN_URL = https://queenkoba-admin.vercel.app
+ADMIN_URL = https://queenkoba-admin-workspace.vercel.app
+CORS_ORIGINS = https://queenkoba.vercel.app,https://www.queenkoba.com,https://queenkoba.com,https://queenkoba-admin-workspace.vercel.app
 M_PESA_ENV = production
 M_PESA_APP_NAME = Prod-Walche Commodity Traders Ltd-1773395059343
 M_PESA_CONSUMER_KEY = eZk6yOsCInRJHkvAc4bselyVjgVZbXuABGHKgU4SaZrkAmSy
