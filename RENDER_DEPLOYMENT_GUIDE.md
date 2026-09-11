@@ -96,6 +96,7 @@ M_PESA_CALLBACK_URL = https://koba-backend-only-k8vt.onrender.com/payments/mpesa
 M_PESA_TRANSACTION_TYPE = CustomerPayBillOnline
 M_PESA_ACCOUNT_REFERENCE = QueenKoba
 PYTHON_VERSION = 3.11.0
+GOOGLE_CLIENT_ID = 445338583811-0gknu3ni8fn9mh3pa874agtu61i29tvr.apps.googleusercontent.com
 ```
 
 ### 3.3 Deploy

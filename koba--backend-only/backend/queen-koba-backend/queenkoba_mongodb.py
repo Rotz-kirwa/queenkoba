@@ -694,6 +694,16 @@ def google_auth():
             if payload and 'email' in payload:
                 email = payload['email']
                 name = payload.get('name', email.split('@')[0])
+            else:
+                try:
+                    token_info_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={credential}"
+                    req = urllib.request.Request(token_info_url)
+                    with urllib.request.urlopen(req, timeout=10) as res:
+                        google_data = json.loads(res.read().decode())
+                    email = google_data.get('email')
+                    name = google_data.get('name', name)
+                except Exception:
+                    pass
                 
         if not email:
             email = data.get('email')

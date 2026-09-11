@@ -22,6 +22,8 @@ services:
         sync: false
       - key: JWT_SECRET_KEY
         generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        value: 445338583811-0gknu3ni8fn9mh3pa874agtu61i29tvr.apps.googleusercontent.com
       - key: FRONTEND_URL
         value: https://www.queenkoba.com
       - key: ADMIN_URL
