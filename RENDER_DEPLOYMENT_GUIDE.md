@@ -92,7 +92,7 @@ M_PESA_CONSUMER_KEY = eZk6yOsCInRJHkvAc4bselyVjgVZbXuABGHKgU4SaZrkAmSy
 M_PESA_CONSUMER_SECRET = BqJY7s3al5Sa7LCcSGDwsUHZ7ipSbqpvuIi2ZCensBN1NBlUumMdcfDB2A41Msfw
 M_PESA_SHORTCODE = 4152819
 M_PESA_PASSKEY = 8e10ea8595b5cc6a555ad8d3f6436f852898258a5647cd927a10e15359d7634b
-M_PESA_CALLBACK_URL = https://koba-backend-only-k8vt.onrender.com/payments/mpesa/callback
+M_PESA_CALLBACK_URL = https://queenkoba.onrender.com/payments/mpesa/callback
 M_PESA_TRANSACTION_TYPE = CustomerPayBillOnline
 M_PESA_ACCOUNT_REFERENCE = QueenKoba
 PYTHON_VERSION = 3.11.0
@@ -102,11 +102,11 @@ GOOGLE_CLIENT_ID = 445338583811-0gknu3ni8fn9mh3pa874agtu61i29tvr.apps.googleuser
 ### 3.3 Deploy
 - Click **Create Web Service**
 - Wait for build to complete (2-5 minutes)
-- **Copy the backend URL**: `https://queenkoba-backend.onrender.com`
+- **Live backend URL**: `https://queenkoba.onrender.com`
 
 ### 3.4 Test Backend
 ```bash
-curl https://queenkoba-backend.onrender.com/health
+curl https://queenkoba.onrender.com/health
 ```
 
 ---
@@ -171,21 +171,22 @@ After all services are deployed, you need to update the frontend and admin to po
 
 Create `.env.production` files (or update existing):
 
-**Frontend** (`/env.production`):
+**Frontend** (`.env.production` or Vercel Environment Variables):
 ```
-VITE_API_URL=https://queenkoba-backend.onrender.com
-VITE_ADMIN_URL=https://queenkoba-admin.onrender.com
+VITE_API_URL=https://queenkoba.onrender.com
+VITE_ADMIN_URL=https://queenkoba-admin-workspace.vercel.app
 ```
 
-**Admin** (`/qwen-koba-admin/.env.production`):
+**Admin** (in `queenkoba.admin.workspace` repository):
 ```
-VITE_API_URL=https://queenkoba-backend.onrender.com
+VITE_API_URL=https://queenkoba.onrender.com
+VITE_STOREFRONT_URL=https://www.queenkoba.com
 ```
 
 ### 6.2 Redeploy Frontend & Admin
 After updating environment variables:
-1. Go to frontend service → Click **Manual Deploy**
-2. Go to admin service → Click **Manual Deploy**
+1. Go to Vercel storefront project → Click **Redeploy**
+2. Go to Vercel admin project → Click **Redeploy**
 
 ---
 
@@ -193,9 +194,9 @@ After updating environment variables:
 
 After deployment, verify everything works:
 
-- [ ] Backend health check: `curl https://queenkoba-backend.onrender.com/health`
-- [ ] Frontend loads: Visit `https://queenkoba-frontend.onrender.com`
-- [ ] Admin panel loads: Visit `https://queenkoba-admin.onrender.com`
+- [ ] Backend health check: `curl https://queenkoba.onrender.com/health`
+- [ ] Frontend loads: Visit `https://queenkoba.vercel.app` or `https://www.queenkoba.com`
+- [ ] Admin panel loads: Visit `https://queenkoba-admin-workspace.vercel.app`
 - [ ] Products display on frontend
 - [ ] Admin can log in
 - [ ] Cart functionality works

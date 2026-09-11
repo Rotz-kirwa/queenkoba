@@ -43,5 +43,5 @@ services:
       - key: M_PESA_SHORTCODE
         value: "4152819"
       - key: M_PESA_CALLBACK_URL
-        value: https://koba-backend-only-k8vt.onrender.com/payments/mpesa/callback
+        value: https://queenkoba.onrender.com/payments/mpesa/callback
 

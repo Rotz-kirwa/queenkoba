@@ -184,7 +184,8 @@ class FastDBProxy:
             'orders': FastCollection('orders'),
             'cart': FastCollection('cart'),
             'payments': FastCollection('payments'),
-            'reviews': FastCollection('reviews')
+            'reviews': FastCollection('reviews'),
+            'promotions': FastCollection('promotions')
         }
 
     @property
@@ -196,6 +197,8 @@ class FastDBProxy:
                 pass
         class Wrapper:
             def __getattr__(_self, name):
+                if name == 'command':
+                    return lambda *args, **kwargs: {'ok': 1}
                 return self._fallback_db.get(name, FastCollection(name))
         return Wrapper()
 
@@ -1038,7 +1041,7 @@ def trigger_mpesa_stk_push(phone_number, amount_kes, order_id):
         consumer_secret = os.getenv('MPESA_CONSUMER_SECRET') or os.getenv('M_PESA_CONSUMER_SECRET') or 'mUu8wN42A2y74w3J'
         shortcode = os.getenv('MPESA_SHORTCODE') or os.getenv('M_PESA_SHORTCODE') or '174379'
         passkey = os.getenv('MPESA_PASSKEY') or os.getenv('M_PESA_PASSKEY') or 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
-        callback_url = os.getenv('MPESA_CALLBACK_URL') or os.getenv('M_PESA_CALLBACK_URL') or 'https://koba-backend-only-k8vt.onrender.com/payments/mpesa/callback'
+        callback_url = os.getenv('MPESA_CALLBACK_URL') or os.getenv('M_PESA_CALLBACK_URL') or 'https://queenkoba.onrender.com/payments/mpesa/callback'
         
         base_url = "https://api.safaricom.co.ke" if env == "production" else "https://sandbox.safaricom.co.ke"
         
